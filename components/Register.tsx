@@ -12,12 +12,6 @@ interface RegisterProps {
 }
 
 export const Register = ({ title, registrationError, registerFormExtraParams, csrfToken, pageName }: RegisterProps) => {
-  const extraParamsHTML = registerFormExtraParams 
-    ? Object.entries(registerFormExtraParams).map(([key, value]) => 
-        html`<input type="hidden" name="${key}" value="${value}" />`
-      ).join('')
-    : '';
-
   return Layout({
     title,
     pageName,
@@ -34,25 +28,25 @@ export const Register = ({ title, registrationError, registerFormExtraParams, cs
           <form class="login" action="/register" method="post">
             <p class="text-gray-700 mb-4">User Registration</p>
             <div class="mb-4">
-              <label class="block text-gray-700 text-sm font-bold mb-2" for="username">
+              <label class="block text-gray-700 text-sm font-bold mb-2" for="reg_username">
                 Username
               </label>
               <input
                 class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
                 type="text"
-                id="username"
+                id="reg_username"
                 name="username"
                 required
               />
             </div>
             <div class="mb-4">
-              <label class="block text-gray-700 text-sm font-bold mb-2" for="password">
+              <label class="block text-gray-700 text-sm font-bold mb-2" for="reg_password">
                 Password
               </label>
               <input
                 class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
                 type="password"
-                id="password"
+                id="reg_password"
                 name="password"
                 required
               />
@@ -70,7 +64,9 @@ export const Register = ({ title, registrationError, registerFormExtraParams, cs
               />
             </div>
             <input type="hidden" name="_csrf" value="${csrfToken}" />
-            ${extraParamsHTML}
+            ${registerFormExtraParams ? Object.entries(registerFormExtraParams).map(([key, value]) => 
+              html`<input type="hidden" name="${key}" value="${value}" />`
+            ) : ''}
             <div>
               <button
                 class="w-full bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
