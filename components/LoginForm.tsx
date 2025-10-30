@@ -43,7 +43,7 @@ export const LoginForm = ({ loginError, csrfToken, loginFormExtraParams, nonce }
         <input type="hidden" name="_csrf" value="${csrfToken}" />
         ${loginFormExtraParams ? Object.entries(loginFormExtraParams).map(([key, value]) => 
           html`<input type="hidden" name="${key}" value="${value}" />`
-        ) : ''}
+        ).join('') : ''}
         <div class="flex items-center justify-between">
           <button
             class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"

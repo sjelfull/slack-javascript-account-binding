@@ -66,7 +66,7 @@ export const Register = ({ title, registrationError, registerFormExtraParams, cs
             <input type="hidden" name="_csrf" value="${csrfToken}" />
             ${registerFormExtraParams ? Object.entries(registerFormExtraParams).map(([key, value]) => 
               html`<input type="hidden" name="${key}" value="${value}" />`
-            ) : ''}
+            ).join('') : ''}
             <div>
               <button
                 class="w-full bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
