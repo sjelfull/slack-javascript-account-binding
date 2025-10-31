@@ -17,7 +17,10 @@ interface UsersModule {
 
 export default (db: BunSQLiteDatabase<any>, users: UsersModule) => {
   function isUser(credential: User): Promise<boolean> {
-    return users.findById(credential.id).then(() => true).catch(() => false);
+    return users
+      .findById(credential.id)
+      .then(() => true)
+      .catch(() => false);
   }
 
   function authorizeSelfOrUser(credential: User | symbol): Promise<boolean> {
@@ -32,16 +35,13 @@ export default (db: BunSQLiteDatabase<any>, users: UsersModule) => {
       return this.setMessage(initialValue, selfCredential);
     },
 
-    async getMessage(credential: User | symbol = {}): Promise<string> {
-      const isAuthorized = await authorizeSelfOrUser(credential);
+    async getMessage(credential?: User | symbol): Promise<string> {
+      const isAuthorized = await authorizeSelfOrUser(credential || selfCredential);
       if (!isAuthorized) {
         throw new Error('Not Authorized');
       }
 
-      const result = await db.select()
-        .from(messages)
-        .where(eq(messages.key, messageKey))
-        .limit(1);
+      const result = await db.select().from(messages).where(eq(messages.key, messageKey)).limit(1);
 
       if (result.length === 0) {
         return this.initialize();
@@ -50,13 +50,14 @@ export default (db: BunSQLiteDatabase<any>, users: UsersModule) => {
       return result[0].value;
     },
 
-    async setMessage(newMessage: string, credential: User | symbol = {}): Promise<string> {
-      const isAuthorized = await authorizeSelfOrUser(credential);
+    async setMessage(newMessage: string, credential?: User | symbol): Promise<string> {
+      const isAuthorized = await authorizeSelfOrUser(credential || selfCredential);
       if (!isAuthorized) {
         throw new Error('Not Authorized');
       }
 
-      await db.insert(messages)
+      await db
+        .insert(messages)
         .values({
           key: messageKey,
           value: newMessage,

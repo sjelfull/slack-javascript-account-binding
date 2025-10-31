@@ -1,22 +1,17 @@
-import { createMiddleware } from 'hono/factory';
-import { getCookie, setCookie } from 'hono/cookie';
 import { randomBytes } from 'crypto';
-import type { BunSQLiteDatabase } from 'drizzle-orm/bun-sqlite';
 import { eq, lt } from 'drizzle-orm';
+import type { BunSQLiteDatabase } from 'drizzle-orm/bun-sqlite';
+import type { Context } from 'hono';
+import { getCookie, setCookie } from 'hono/cookie';
+import { createMiddleware } from 'hono/factory';
 import { sessions } from '../db/schema';
-
-interface SessionData {
-  userId?: string;
-  flash?: Record<string, any>;
-  csrfToken?: string;
-  [key: string]: any;
-}
+import type { AppContext, SessionData } from './types';
 
 const SESSION_COOKIE_NAME = 'session_id';
 const SESSION_MAX_AGE = 24 * 60 * 60 * 1000; // 24 hours
 
 export function sessionMiddleware(db: BunSQLiteDatabase<any>) {
-  return createMiddleware(async (c, next) => {
+  return createMiddleware<AppContext>(async (c, next) => {
     // Clean up expired sessions periodically
     await db.delete(sessions).where(lt(sessions.expiresAt, new Date()));
 
@@ -24,10 +19,7 @@ export function sessionMiddleware(db: BunSQLiteDatabase<any>) {
     let sessionData: SessionData = {};
 
     if (sessionId) {
-      const result = await db.select()
-        .from(sessions)
-        .where(eq(sessions.id, sessionId))
-        .limit(1);
+      const result = await db.select().from(sessions).where(eq(sessions.id, sessionId)).limit(1);
 
       if (result.length > 0 && result[0].expiresAt > new Date()) {
         sessionData = JSON.parse(result[0].data);
@@ -47,8 +39,9 @@ export function sessionMiddleware(db: BunSQLiteDatabase<any>) {
     // Helper to save session
     c.set('saveSession', async (data: SessionData) => {
       const expiresAt = new Date(Date.now() + SESSION_MAX_AGE);
-      
-      await db.insert(sessions)
+
+      await db
+        .insert(sessions)
         .values({
           id: newSessionId,
           data: JSON.stringify(data),
@@ -76,9 +69,9 @@ export function sessionMiddleware(db: BunSQLiteDatabase<any>) {
 
 // CSRF Protection
 export function csrfMiddleware() {
-  return createMiddleware(async (c, next) => {
+  return createMiddleware<AppContext>(async (c, next) => {
     const session = c.get('getSession')();
-    
+
     // Generate CSRF token if not exists
     if (!session.csrfToken) {
       session.csrfToken = randomBytes(32).toString('hex');
@@ -102,19 +95,19 @@ export function csrfMiddleware() {
 }
 
 // Flash messages
-export function getFlash(c: any, key: string): string | undefined {
+export function getFlash(c: Context<AppContext>, key: string): string | undefined {
   const session = c.get('getSession')();
   const value = session.flash?.[key];
-  
-  if (value) {
+
+  if (value && session.flash) {
     delete session.flash[key];
     c.get('saveSession')(session);
   }
-  
+
   return value;
 }
 
-export function setFlash(c: any, key: string, value: string): void {
+export function setFlash(c: Context<AppContext>, key: string, value: string): void {
   const session = c.get('getSession')();
   if (!session.flash) {
     session.flash = {};

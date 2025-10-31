@@ -7,14 +7,23 @@ interface LoginFormProps {
   nonce?: string;
 }
 
-export const LoginForm = ({ loginError, csrfToken, loginFormExtraParams, nonce }: LoginFormProps) => {
+export const LoginForm = ({
+  loginError,
+  csrfToken,
+  loginFormExtraParams,
+  nonce,
+}: LoginFormProps) => {
   return html`
     <div class="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
-      ${loginError ? html`
+      ${
+        loginError
+          ? html`
         <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4" role="alert">
           <p>${loginError}</p>
         </div>
-      ` : ''}
+      `
+          : ''
+      }
       <form class="login" action="/login" method="post">
         <div class="mb-4">
           <label class="block text-gray-700 text-sm font-bold mb-2" for="login_username">
@@ -41,9 +50,13 @@ export const LoginForm = ({ loginError, csrfToken, loginFormExtraParams, nonce }
           />
         </div>
         <input type="hidden" name="_csrf" value="${csrfToken}" />
-        ${loginFormExtraParams ? Object.entries(loginFormExtraParams).map(([key, value]) => 
-          html`<input type="hidden" name="${key}" value="${value}" />`
-        ).join('') : ''}
+        ${
+          loginFormExtraParams
+            ? Object.entries(loginFormExtraParams)
+                .map(([key, value]) => html`<input type="hidden" name="${key}" value="${value}" />`)
+                .join('')
+            : ''
+        }
         <div class="flex items-center justify-between">
           <button
             class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
@@ -51,21 +64,25 @@ export const LoginForm = ({ loginError, csrfToken, loginFormExtraParams, nonce }
           >
             Login
           </button>
-          ${nonce ? html`
+          ${
+            nonce
+              ? html`
             <a
               class="inline-block align-baseline font-bold text-sm text-blue-500 hover:text-blue-800"
               href="/register?ref=${nonce}"
             >
               Register
             </a>
-          ` : html`
+          `
+              : html`
             <a
               class="inline-block align-baseline font-bold text-sm text-blue-500 hover:text-blue-800"
               href="/register"
             >
               Register
             </a>
-          `}
+          `
+          }
         </div>
       </form>
     </div>

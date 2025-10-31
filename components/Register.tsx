@@ -1,7 +1,7 @@
 import { html } from 'hono/html';
-import { Layout } from './Layout.tsx';
-import { Header } from './Header.tsx';
 import { Footer } from './Footer.tsx';
+import { Header } from './Header.tsx';
+import { Layout } from './Layout.tsx';
 
 interface RegisterProps {
   title: string;
@@ -11,7 +11,13 @@ interface RegisterProps {
   pageName?: string;
 }
 
-export const Register = ({ title, registrationError, registerFormExtraParams, csrfToken, pageName }: RegisterProps) => {
+export const Register = ({
+  title,
+  registrationError,
+  registerFormExtraParams,
+  csrfToken,
+  pageName,
+}: RegisterProps) => {
   return Layout({
     title,
     pageName,
@@ -20,11 +26,15 @@ export const Register = ({ title, registrationError, registerFormExtraParams, cs
       <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div class="bg-white shadow-md rounded-lg p-6 max-w-md mx-auto">
           <h2 class="text-3xl font-bold text-gray-900 mb-4">${title}</h2>
-          ${registrationError ? html`
+          ${
+            registrationError
+              ? html`
             <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4" role="alert">
               <p>${registrationError}</p>
             </div>
-          ` : ''}
+          `
+              : ''
+          }
           <form class="login" action="/register" method="post">
             <p class="text-gray-700 mb-4">User Registration</p>
             <div class="mb-4">
@@ -64,9 +74,15 @@ export const Register = ({ title, registrationError, registerFormExtraParams, cs
               />
             </div>
             <input type="hidden" name="_csrf" value="${csrfToken}" />
-            ${registerFormExtraParams ? Object.entries(registerFormExtraParams).map(([key, value]) => 
-              html`<input type="hidden" name="${key}" value="${value}" />`
-            ).join('') : ''}
+            ${
+              registerFormExtraParams
+                ? Object.entries(registerFormExtraParams)
+                    .map(
+                      ([key, value]) => html`<input type="hidden" name="${key}" value="${value}" />`
+                    )
+                    .join('')
+                : ''
+            }
             <div>
               <button
                 class="w-full bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"

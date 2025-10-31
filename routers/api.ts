@@ -1,5 +1,5 @@
-import { Hono } from 'hono';
 import axios from 'axios';
+import { Hono } from 'hono';
 import { packageIdentifier } from '../lib/util';
 
 const slackVerificationToken = process.env.SLACK_VERIFICATION_TOKEN;
@@ -30,7 +30,7 @@ export function createApiRouter(users: any, message: any) {
   };
 
   api.post('/slack/command', async (c) => {
-    const body = await c.req.parseBody() as unknown as SlackCommandBody;
+    const body = (await c.req.parseBody()) as unknown as SlackCommandBody;
 
     // Verify request is from Slack
     if (body.token !== slackVerificationToken) {
@@ -43,28 +43,28 @@ export function createApiRouter(users: any, message: any) {
         try {
           // Authenticate the Slack user
           const user = await users.findBySlackId(body.user_id);
-          
+
           // Execute command
           const command = commands[body.command];
           if (!command) {
             throw new Error(`Cannot understand the command: \`${body.command}\``);
           }
-          
+
           const response = await command({ user, text: body.text });
-          
+
           await httpClient.post(body.response_url, {
             response_type: 'in_channel',
             text: response,
           });
         } catch (error: any) {
           let errorMessage = error.message;
-          
+
           // Handle user not found error
           if (error.code === 'EUSERNOTFOUND') {
             await users.beginSlackAssociation(body.user_id);
             errorMessage = `Sorry <@${body.user_id}>, you cannot run \`${body.command}\` until after you authenticate. I can help you, just check my DM for the next step, and then you can try the command again.`;
           }
-          
+
           await httpClient.post(body.response_url, {
             response_type: 'in_channel',
             text: errorMessage,

@@ -8,7 +8,13 @@
     "start": "bun run index.ts",
     "dev": "bun run --watch index.ts",
     "db:generate": "drizzle-kit generate",
-    "db:migrate": "bun run db/migrate.ts"
+    "db:migrate": "bun run db/migrate.ts",
+    "lint": "biome lint .",
+    "lint:fix": "biome lint --write .",
+    "format": "biome format --write .",
+    "check": "biome check .",
+    "check:fix": "biome check --write .",
+    "typecheck": "bun run --bun tsc --noEmit"
   },
   "author": "Ankur Oberoi <aoberoi@gmail.com>",
   "license": "MIT",
@@ -25,6 +31,7 @@
     "uuid": "^9.0.1"
   },
   "devDependencies": {
+    "@biomejs/biome": "^2.3.2",
     "@types/bcryptjs": "^2.4.6",
     "@types/config": "^3.3.4",
     "@types/node": "^20.0.0",

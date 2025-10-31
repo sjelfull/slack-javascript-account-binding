@@ -1,8 +1,9 @@
 import { html } from 'hono/html';
+import type { HtmlEscapedString } from 'hono/utils/html';
 
 interface LayoutProps {
   title: string;
-  children: any;
+  children: HtmlEscapedString | Promise<HtmlEscapedString>;
   pageName?: string;
 }
 

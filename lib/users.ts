@@ -1,12 +1,12 @@
-import { URL } from 'url';
-import config from 'config';
-import { v4 as uuid } from 'uuid';
-import randomstring from 'randomstring';
-import bcrypt from 'bcryptjs';
 import { WebClient } from '@slack/web-api';
+import bcrypt from 'bcryptjs';
+import config from 'config';
 import { eq } from 'drizzle-orm';
 import type { BunSQLiteDatabase } from 'drizzle-orm/bun-sqlite';
-import { users, associationLinks } from '../db/schema';
+import randomstring from 'randomstring';
+import { URL } from 'url';
+import { v4 as uuid } from 'uuid';
+import { associationLinks, users } from '../db/schema';
 
 const slack = new WebClient(process.env.SLACK_BOT_TOKEN);
 
@@ -27,7 +27,7 @@ export default (db: BunSQLiteDatabase<any>) => {
   return {
     async findById(id: string): Promise<User> {
       const result = await db.select().from(users).where(eq(users.id, id)).limit(1);
-      
+
       if (result.length === 0) {
         const notFoundError = new Error('User not found');
         (notFoundError as any).code = 'EUSERNOTFOUND';
@@ -44,7 +44,8 @@ export default (db: BunSQLiteDatabase<any>) => {
     },
 
     async setById(id: string, user: User): Promise<User> {
-      await db.update(users)
+      await db
+        .update(users)
         .set({
           username: user.username,
           passwordHash: user.passwordHash,
@@ -52,15 +53,12 @@ export default (db: BunSQLiteDatabase<any>) => {
           slackDmChannelId: user.slackDmChannelId,
         })
         .where(eq(users.id, id));
-      
+
       return user;
     },
 
     async findByUsername(username: string): Promise<User> {
-      const result = await db.select()
-        .from(users)
-        .where(eq(users.username, username))
-        .limit(1);
+      const result = await db.select().from(users).where(eq(users.username, username)).limit(1);
 
       if (result.length === 0) {
         const notFoundError = new Error('User not found');
@@ -78,10 +76,7 @@ export default (db: BunSQLiteDatabase<any>) => {
     },
 
     async findBySlackId(slackId: string): Promise<User> {
-      const result = await db.select()
-        .from(users)
-        .where(eq(users.slackId, slackId))
-        .limit(1);
+      const result = await db.select().from(users).where(eq(users.slackId, slackId)).limit(1);
 
       if (result.length === 0) {
         const notFoundError = new Error('User not found');
@@ -124,7 +119,7 @@ export default (db: BunSQLiteDatabase<any>) => {
 
         const passwordHash = await bcrypt.hash(password, 10);
         const userId = uuid();
-        
+
         await db.insert(users).values({
           id: userId,
           username,
@@ -142,7 +137,7 @@ export default (db: BunSQLiteDatabase<any>) => {
 
     async beginSlackAssociation(slackUserId: string): Promise<string> {
       const ref = randomstring.generate();
-      
+
       const response = await slack.conversations.open({ users: slackUserId });
       const dmChannelId = response.channel?.id;
 
@@ -179,7 +174,8 @@ export default (db: BunSQLiteDatabase<any>) => {
     },
 
     async completeSlackAssociation(userId: string, associationRef: string): Promise<void> {
-      const linkResult = await db.select()
+      const linkResult = await db
+        .select()
         .from(associationLinks)
         .where(eq(associationLinks.ref, associationRef))
         .limit(1);
@@ -191,7 +187,8 @@ export default (db: BunSQLiteDatabase<any>) => {
       const link = linkResult[0];
 
       await Promise.all([
-        db.update(users)
+        db
+          .update(users)
           .set({
             slackId: link.slackUserId,
             slackDmChannelId: link.dmChannelId,

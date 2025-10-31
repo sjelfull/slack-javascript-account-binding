@@ -1,15 +1,16 @@
+import config from 'config';
+import type { BunSQLiteDatabase } from 'drizzle-orm/bun-sqlite';
 import { Hono } from 'hono';
 import { serveStatic } from 'hono/bun';
-import config from 'config';
 import { paramCase } from 'param-case';
-import type { BunSQLiteDatabase } from 'drizzle-orm/bun-sqlite';
-import { sessionMiddleware, csrfMiddleware, getFlash, setFlash } from '../lib/middleware';
+import { Association } from '../components/Association.tsx';
 import { Home } from '../components/Home.tsx';
 import { Register } from '../components/Register.tsx';
-import { Association } from '../components/Association.tsx';
+import { csrfMiddleware, getFlash, sessionMiddleware, setFlash } from '../lib/middleware';
+import type { AppContext } from '../lib/types';
 
 export function createWebRouter(db: BunSQLiteDatabase<any>, users: any, message: any) {
-  const web = new Hono();
+  const web = new Hono<AppContext>();
 
   // Serve static files
   web.use('/public/*', serveStatic({ root: './' }));
@@ -53,7 +54,7 @@ export function createWebRouter(db: BunSQLiteDatabase<any>, users: any, message:
     }
 
     const props = {
-      title: "Home",
+      title: 'Home',
       user: user,
       message: myMessage,
       loginError: getFlash(c, 'login-error'),
@@ -72,12 +73,10 @@ export function createWebRouter(db: BunSQLiteDatabase<any>, users: any, message:
     }
 
     const refParam = c.req.query('ref');
-    const redirectUrl = refParam 
-      ? `${config.get('routes.associationPath')}?ref=${refParam}` 
-      : '/';
+    const redirectUrl = refParam ? `${config.get('routes.associationPath')}?ref=${refParam}` : '/';
 
     const props = {
-      title: "Registration",
+      title: 'Registration',
       registrationError: getFlash(c, 'registration-error'),
       registerFormExtraParams: { redirectUrl },
       csrfToken: c.get('csrfToken'),
@@ -162,8 +161,8 @@ export function createWebRouter(db: BunSQLiteDatabase<any>, users: any, message:
 
     if (!user) {
       const props = {
-        title: "Slack User Association",
-        mainMessage: "You must login before user association can be completed.",
+        title: 'Slack User Association',
+        mainMessage: 'You must login before user association can be completed.',
         renderLoginForm: true,
         nonce: refParam,
         loginFormExtraParams: { redirectUrl: c.req.url },
@@ -176,8 +175,8 @@ export function createWebRouter(db: BunSQLiteDatabase<any>, users: any, message:
 
     if (user.slackId) {
       const props = {
-        title: "Slack User Association",
-        mainMessage: "Your user account is already associated with a Slack user.",
+        title: 'Slack User Association',
+        mainMessage: 'Your user account is already associated with a Slack user.',
         user: user,
         csrfToken: c.get('csrfToken'),
         pageName: c.get('pageName'),
@@ -189,17 +188,17 @@ export function createWebRouter(db: BunSQLiteDatabase<any>, users: any, message:
       try {
         await users.completeSlackAssociation(user.id, refParam);
         const props = {
-          title: "Slack User Association",
-          mainMessage: "Your user account has successfully been associated with your Slack user.",
+          title: 'Slack User Association',
+          mainMessage: 'Your user account has successfully been associated with your Slack user.',
           user: user,
           csrfToken: c.get('csrfToken'),
           pageName: c.get('pageName'),
-          redirectUrl: "/",
+          redirectUrl: '/',
         };
         return c.html(Association(props));
       } catch (error: any) {
         const props = {
-          title: "Slack User Association",
+          title: 'Slack User Association',
           mainMessage: `An error occurred: ${error.message}`,
           user: user,
           csrfToken: c.get('csrfToken'),
@@ -210,8 +209,8 @@ export function createWebRouter(db: BunSQLiteDatabase<any>, users: any, message:
     }
 
     const props = {
-      title: "Slack User Association",
-      mainMessage: "You must begin the user association process before visiting this page.",
+      title: 'Slack User Association',
+      mainMessage: 'You must begin the user association process before visiting this page.',
       user: user,
       csrfToken: c.get('csrfToken'),
       pageName: c.get('pageName'),

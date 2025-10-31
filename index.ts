@@ -1,11 +1,11 @@
 import 'dotenv/config';
-import { Hono } from 'hono';
 import config from 'config';
+import { Hono } from 'hono';
 import { db } from './db';
-import usersFactory from './lib/users';
 import messageFactory from './lib/message';
-import { createWebRouter } from './routers/web';
+import usersFactory from './lib/users';
 import { createApiRouter } from './routers/api';
+import { createWebRouter } from './routers/web';
 
 const users = usersFactory(db);
 const message = messageFactory(db, users);
@@ -16,8 +16,8 @@ const app = new Hono();
 app.route('/api', createApiRouter(users, message));
 app.route('/', createWebRouter(db, users, message));
 
-const port = config.has('server.internalPort') 
-  ? config.get('server.internalPort') 
+const port = config.has('server.internalPort')
+  ? config.get('server.internalPort')
   : config.get('server.port');
 
 console.log(`Server listening on port ${port}`);
